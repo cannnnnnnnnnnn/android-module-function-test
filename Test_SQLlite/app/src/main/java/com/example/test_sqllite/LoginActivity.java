@@ -6,9 +6,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,6 +22,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private Button login;
     private Button regs;
+    private Button update;
+    private Button del;
 
 
     // 创建数据库对象
@@ -42,6 +42,9 @@ public class LoginActivity extends AppCompatActivity {
 
         login = findViewById(R.id.login);
         regs = findViewById(R.id.registered);
+        update = findViewById(R.id.update);
+        del = findViewById(R.id.delete);
+
 
         data = new UserModel();
 
@@ -88,6 +91,33 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // 更新数据
+        update.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String username = user.getText().toString().trim();
+                String pass = password.getText().toString().trim();
+                if (upPersonData(username, pass)) {
+                    Toast.makeText(LoginActivity.this, "更新成功！", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(LoginActivity.this, "该账户不存在！", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        // 删除
+        del.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String username = user.getText().toString().trim();
+                if (delPersonData(username)) {
+                    Toast.makeText(LoginActivity.this, "删除成功！", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(LoginActivity.this, "该账户不存在！", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     /**
@@ -99,11 +129,6 @@ public class LoginActivity extends AppCompatActivity {
         ContentValues values = new ContentValues();
         values.put("user", model.getUsername());
         values.put("password", model.getPassword());
-//        values.put(VALUE_NAME,model.getName());
-//        values.put(VALUE_AGE,model.getAge());
-//        values.put(VALUE_ISBOY,model.getIsBoy());
-//        values.put(VALUE_ADDRESS,model.getAddress());
-//        values.put(VALUE_PIC,model.getPic());//储存图片，这里是byte数据
 
         //添加数据到数据库
         long index = mySqliteHelper.getWritableDatabase().insert("users", null, values);
@@ -128,9 +153,49 @@ public class LoginActivity extends AppCompatActivity {
                 if (pass2.equals(data.getPassword())) {
                     flag = true;
                 }
+                // 移动到下一个对象
+                cursor.moveToNext();
             }
         }
 
+        return flag;
+    }
+
+    /**
+     * 删除表单信息
+     */
+    public Boolean delPersonData(String count) {
+        Boolean flag = false;
+        // 直接删除
+        int result = mySqliteHelper.getWritableDatabase().delete("users", "user = ?", new String[]{count});
+        if (result != 0) {
+            flag = true;
+        }
+        return flag;
+    }
+
+
+    /**
+     * 更新表单信息
+     * 通过账户信息更新登录密码
+     */
+    public Boolean upPersonData(String count, String newPass) {
+        Boolean flag = false;
+        // 先进行查询
+        // 查询是否存在该数据
+        Cursor cursor = mySqliteHelper.getWritableDatabase().query("users", null, "user = ?", new String[]{count}, null, null, null);
+        if (cursor.getCount() > 0) {
+            // 存在该账户
+            //把数据添加到ContentValues
+            ContentValues values = new ContentValues();
+            values.put("password", newPass);
+            // 执行更新操作
+            int result = mySqliteHelper.getWritableDatabase().update("users", values, "user = ?", new String[]{count});
+            if (result != 0) {
+                flag = true;
+            }
+
+        }
         return flag;
     }
 }

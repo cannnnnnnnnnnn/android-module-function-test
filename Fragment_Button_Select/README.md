@@ -45,3 +45,13 @@ android {
 > 在**menu**目录下的**item**对象属性ID这里，需要与导航文件一直，否则点击之后无法切换
 
 ![image-20230112134423788](README.pic/image-20230112134423788.png)
+
+#### 五、超级天坑
+
+> 操作完数据绑定之后，一定要记得解除**MainActivity**中删除**xml**页面的数据绑定
+
+不然就会出现APP闪退的情况
+
+![image-20230112151330490](README.pic/image-20230112151330490.png)
+
+~~setContentView(R.layout.activity_main);~~
